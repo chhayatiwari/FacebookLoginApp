@@ -47,7 +47,21 @@ class ViewController: UIViewController {
             case .failed(let error):
                 print(error.localizedDescription)
             case .success(response: let graphResponse):
-                print(graphResponse.dictionaryValue)
+                guard let responseDictionary = graphResponse.dictionaryValue else {
+                    return
+                }
+                guard let name = responseDictionary["name"] as? String else {
+                    return
+                }
+                self.username.text = name
+                guard let picture = responseDictionary["picture"] as? [String:AnyObject] else { return }
+                guard let data = picture["data"] as? [String: AnyObject] else { return }
+                guard let urlString = data["url"] as? String else { return }
+                guard let url = URL(string: urlString) else { return }
+                guard let urlData = try? Data(contentsOf: url) else { return }
+                performUIUpdatesOnMain {
+                    self.imageView.image = UIImage(data: urlData)
+                }
             }
         }
     }
